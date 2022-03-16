@@ -42,10 +42,41 @@ void sortFScore(DynamicArray<NodeGraph::Node*>& nodes)
 	}
 }
 
-DynamicArray<NodeGraph::Node*> NodeGraph::findPath(Node* start, Node* goal)
-{
-	//Insert algorithm here
-	
+//Applies Dijkstra's algorithm to find the shortest path from one node to another
+DynamicArray<NodeGraph::Node*> NodeGraph::findPath(Node* start, Node* goal) {
+	NodeGraph::Node* currentNode; //The node that is currently being processed
+	bool isOpenListEmpty = false; //The while loop will continue looping while false
+	float currentDistance = 0; //Stores the cost of traversing through nodes
+
+	//A list that holds nodes currently being processed
+	DynamicArray<NodeGraph::Node*> openList = DynamicArray<NodeGraph::Node*>();
+	//A list that holds nodes that have already been processed
+	DynamicArray<NodeGraph::Node*> closedList = DynamicArray<NodeGraph::Node*>();
+
+	openList.addItem(start); //Adds the starting node to the openList array
+	currentNode = start; //Sets the current node to be be the given starting node
+
+	//Searches for a path until the isOpenListEmpty bool is set to true
+	while (isOpenListEmpty) {
+		//Removes the current node from the open list array, since we are processing it now
+		openList.remove(currentNode);
+		//Adds the current node to the closed list so that we don't process it again
+		closedList.addItem(currentNode);
+
+		for (int i = 0; i < currentNode->edges.getLength(); i++) {
+			openList.addItem(currentNode->edges[i].target);
+			//Adds the current distance to this edge's cost
+			currentNode->edges[i].cost += currentDistance;
+		}
+
+		//Stores the current smallest distance of all of the edges' costs
+		float smallestDistance = currentNode->edges[0].cost;
+		for (int i = 0; i < currentNode->edges.getLength(); i++) {
+			//If the current node's cost is less than the current smallest cost, replace the current one
+			if (currentNode->edges[i].cost < smallestDistance)
+				smallestDistance = currentNode->edges[i].cost;
+		}
+	}
 }
 
 void NodeGraph::drawGraph(Node* start)
