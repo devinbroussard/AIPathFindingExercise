@@ -56,29 +56,43 @@ DynamicArray<NodeGraph::Node*> NodeGraph::findPath(Node* start, Node* goal) {
 
 	//Searches for a path until the isOpenListEmpty bool is set to true
 	while (openList.getLength() > 0) {
-		NodeGraph::Node* shortestGScore = currentNode->edges[0].target;
-		for (int i = 0; i < currentNode->edges.getLength(); i++) {
-			//Adds the node to the open list if it is not already in it
-			if (!openList.contains(currentNode->edges[i].target))
-				openList.addItem(currentNode->edges[i].target);
 
-			//Adds the current distance to the edge's cost, and add the node to the open list
-			float nodeGScore = currentNode->edges[i].cost + gScore;
-			if (currentNode->edges[i].target->gScore > nodeGScore)
-				currentNode->edges[i].target->gScore = nodeGScore;
+		NodeGraph::Node* key = nullptr;
+		int j = 0;
 
-			currentNode->edges[i].target->previous = currentNode;
-			
-			if (currentNode->edges[i].target->gScore < shortestGScore->gScore)
-				shortestGScore = currentNode->edges[i].target;
+		for (int i = 1; i < openList.getLength(); i++) {
+			key = openList[i];
+			j = i - 1;
+			while (j >= 0 && openList[j]->gScore > key->gScore) {
+				openList[j + 1] = openList[j];
+				j--;
+			}
+
+			openList[j + 1] = key;
 		}
 
-		currentNode = shortestGScore;
+		currentNode = openList[0];
+
 		//Removes the current node from the open list array, since we are processing it now
 		openList.remove(currentNode);
 		//Adds the current node to the closed list so that we don't process it again
 		closedList.addItem(currentNode);
-		
+
+		NodeGraph::Node* shortestGScore = currentNode->edges[0].target;
+		for (int i = 0; i < currentNode->edges.getLength(); i++) {
+			//Adds the node to the open list if it is not already in it
+			if (!openList.contains(currentNode->edges[i].target) || !closedList.contains(currentNode->edges[i].target))
+				openList.addItem(currentNode->edges[i].target);
+			else break;
+
+			//Adds the current distance to the edge's cost, and add the node to the open list
+			float nodeGScore = currentNode->edges[i].cost + gScore;
+			if (currentNode->edges[i].target->gScore > nodeGScore || openList.contains(currentNode->edges[i].target)) {
+				currentNode->edges[i].target->gScore = nodeGScore;
+
+				currentNode->edges[i].target->previous = currentNode;
+			}
+		}
 	}
 
 	return reconstructPath(start, goal);
