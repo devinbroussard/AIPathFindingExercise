@@ -29,6 +29,9 @@ namespace NodeGraph
 
 	DynamicArray<Node*> findPath(Node* start, Node* end);
 
+	//Returns the Manhattan distance of two nodes
+	float getManhattanDistance(Node* start, Node* end);
+
 	void drawGraph(Node* start);
 
 	void drawNode(Node* node, float size = 14);

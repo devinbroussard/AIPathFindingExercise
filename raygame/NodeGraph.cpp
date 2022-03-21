@@ -60,17 +60,8 @@ DynamicArray<NodeGraph::Node*> NodeGraph::findPath(Node* start, Node* goal) {
 	while (openList.getLength() > 0) {
 		NodeGraph::Node* key = nullptr;
 		int j = 0;
-
-		for (int i = 1; i < openList.getLength(); i++) {
-			key = openList[i];
-			j = i - 1;
-			while (j >= 0 && openList[j]->gScore > key->gScore) {
-				openList[j + 1] = openList[j];
-				j--;
-			}
-
-			openList[j + 1] = key;
-		}
+		
+		sortFScore(openList);
 
 		currentNode = openList[0];
 
@@ -89,8 +80,11 @@ DynamicArray<NodeGraph::Node*> NodeGraph::findPath(Node* start, Node* goal) {
 				continue;
 
 			float nodeGScore;
+			float nodeHScore;
 			if (!closedList.contains(currentNode->edges[i].target)) {
+				
 				nodeGScore = currentNode->edges[i].cost + gScore;
+				nodeHScore = getManhattanDistance(currentNode->edges[i].target, goal);
 			}
 			else continue;
 			//Adds the node to the open list if it is not already in it
@@ -98,6 +92,8 @@ DynamicArray<NodeGraph::Node*> NodeGraph::findPath(Node* start, Node* goal) {
 				openList.addItem(currentNode->edges[i].target);
 				currentNode->edges[i].target->color = 0xFFFF00FF;
 				currentNode->edges[i].target->gScore = nodeGScore;
+				currentNode->edges[i].target->hScore = nodeHScore;
+				currentNode->edges[i].target->fScore = nodeGScore + nodeHScore;
 				currentNode->edges[i].target->previous = currentNode;
 			}
 		}
@@ -105,6 +101,11 @@ DynamicArray<NodeGraph::Node*> NodeGraph::findPath(Node* start, Node* goal) {
 
 	return reconstructPath(start, goal);
 	//return DynamicArray<NodeGraph::Node*>();
+}
+
+float NodeGraph::getManhattanDistance(Node* start, Node* end) {
+	return abs(start->position.x - end->position.x)
+		+ abs(start->position.y - end->position.y);
 }
 
 void NodeGraph::drawGraph(Node* start)
