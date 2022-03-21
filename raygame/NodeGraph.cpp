@@ -9,7 +9,7 @@ DynamicArray<NodeGraph::Node*> reconstructPath(NodeGraph::Node* start, NodeGraph
 
 	while (currentNode != start->previous)
 	{
-		currentNode->color = 0xFFFF00FF;
+		currentNode->color = 0xFF0000FF;
 		path.insert(currentNode, 0);
 		currentNode = currentNode->previous;
 	}
@@ -44,6 +44,8 @@ void sortFScore(DynamicArray<NodeGraph::Node*>& nodes)
 
 //Applies Dijkstra's algorithm to find the shortest path from one node to another
 DynamicArray<NodeGraph::Node*> NodeGraph::findPath(Node* start, Node* goal) {
+	resetGraphScore(start);
+	start->color = 0xFFFF00FF;
 	NodeGraph::Node* currentNode; //The node that is currently being processed
 	float gScore = 0;
 	//A list that holds nodes currently being processed
@@ -56,7 +58,6 @@ DynamicArray<NodeGraph::Node*> NodeGraph::findPath(Node* start, Node* goal) {
 
 	//Searches for a path until the isOpenListEmpty bool is set to true
 	while (openList.getLength() > 0) {
-
 		NodeGraph::Node* key = nullptr;
 		int j = 0;
 
@@ -73,29 +74,37 @@ DynamicArray<NodeGraph::Node*> NodeGraph::findPath(Node* start, Node* goal) {
 
 		currentNode = openList[0];
 
+		if (currentNode == goal)
+			return reconstructPath(start, currentNode);
+
 		//Removes the current node from the open list array, since we are processing it now
 		openList.remove(currentNode);
 		//Adds the current node to the closed list so that we don't process it again
 		closedList.addItem(currentNode);
+		gScore = currentNode->gScore;
 
 		NodeGraph::Node* shortestGScore = currentNode->edges[0].target;
 		for (int i = 0; i < currentNode->edges.getLength(); i++) {
+			if (!currentNode->edges[i].target->walkable)
+				continue;
+
+			float nodeGScore;
+			if (!closedList.contains(currentNode->edges[i].target)) {
+				nodeGScore = currentNode->edges[i].cost + gScore;
+			}
+			else continue;
 			//Adds the node to the open list if it is not already in it
-			if (!openList.contains(currentNode->edges[i].target) || !closedList.contains(currentNode->edges[i].target))
+			if (!openList.contains(currentNode->edges[i].target) || currentNode->edges[i].target->gScore > nodeGScore) {
 				openList.addItem(currentNode->edges[i].target);
-			else break;
-
-			//Adds the current distance to the edge's cost, and add the node to the open list
-			float nodeGScore = currentNode->edges[i].cost + gScore;
-			if (currentNode->edges[i].target->gScore > nodeGScore || openList.contains(currentNode->edges[i].target)) {
+				currentNode->edges[i].target->color = 0xFFFF00FF;
 				currentNode->edges[i].target->gScore = nodeGScore;
-
 				currentNode->edges[i].target->previous = currentNode;
 			}
 		}
 	}
 
 	return reconstructPath(start, goal);
+	//return DynamicArray<NodeGraph::Node*>();
 }
 
 void NodeGraph::drawGraph(Node* start)

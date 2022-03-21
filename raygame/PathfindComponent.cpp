@@ -43,6 +43,10 @@ void PathfindComponent::update(float deltaTime)
 	MathLibrary::Vector2 direction = { 0.0f, 0.0f };
 	if (!m_path.getLength() <= 0)
 		direction = MathLibrary::Vector2::normalize(m_path[0]->position - ownerPosition);
+	if (m_path.getLength() == 1) {
+		m_owner->getMoveComponent()->setVelocity({ 0, 0 });
+		return;
+	}
 
 	//Calculate the force
 	MathLibrary::Vector2 desiredVelocity = direction * m_owner->getMaxForce();
@@ -71,6 +75,7 @@ void PathfindComponent::updatePath(MathLibrary::Vector2 destination)
 	NodeGraph::Node* targetNode = m_maze->getTile(destination).node;
 	m_path = NodeGraph::findPath(ownerNode, targetNode);
 	//if (!m_path.empty()) m_path.pop_front();
+
 	m_needPath = false;
 }
 
